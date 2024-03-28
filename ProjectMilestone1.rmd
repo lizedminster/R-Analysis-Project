@@ -1,0 +1,50 @@
+---
+title: "ProjectMilestone1"
+author: "Elizabeth Edminster & Sara Evans"
+date: "2024-03-15"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project: Analysis of the trends that lead to the survival & downfall of American public libraries
+Problem: Figuring out what makes certain libraries sustainable, trends in libraries from different states, & other assorted trends & survival data from 2006-2021
+
+Unusually named Columns:
+BKVOL - PRINT MATERIALS
+EBOOK - ELECTRONIC BOOKS
+AUDIO_PH - AUDIO PHYSICAL UNITS
+AUDIO_DL - AUDIO DOWNLOADABLE UNITS
+VIDEO_PH - VIDEO PHYSICAL UNITS
+VIDEO_DL - VIDEO DOWNLOADABLE UNITS
+LOANTO -  INTER-LIBRARY LOANS OUT
+LOANFM - INTER-LIBRARY LOANS RECEIVED
+PITUSR - PUBLIC INTERNET COMPUTER USES PER YEAR
+KIDCIRCL - CIRCULATION OF KIDS MATERIALS
+TOTCIR - TOTAL CIRCULATION
+VISITS - LIBRARY VISITS
+C_FSCS - (Public library system meets all criteria in
+the definition)
+
+Guiding Question: Our guiding questions are "what features make some libraries successful, some libraries popular, and some libraries dissapear? How do different libraries react to changes thorughout the years from 2006-2021? How do different locations affect these features & responses?"
+
+Domain: This review is under the domain of public resources, education, &, to some extent, sociology. The implications of the results would fall under the fields of education, public policy, library science, & business. 
+
+Data: https://www.imls.gov/research-evaluation/data-collection/public-libraries-survey
+This data is from the Institute of Museum & Library Services. They have data on these libraries nationally from 2005 to 2021. The selected columns for our preliminary exploration are listed below. Further columns & information about the data can be found at this link. 
+
+Following questions: We would also like to look at the affects of national events such as the 2008 financial crisis, covid, & more on library enrollment. We may also look into other data on things like literacy rates, childhood techonology use, & public perspectives on public libraries to compare the data on a matched timeline. 
+
+```{R}
+library(tidyverse)
+data <- read.csv("C:/Users/lized/OneDrive/Documents/GitHub/R-Analysis-Project/pls_fy2021_csv/PLS_FY2021 PUD_CSV/PLS_FY21_AE_pud21i.csv")
+
+#This data specifically is the 2021 data
+df <- data %>% select(LIBID, LIBNAME, STABR, LOANTO, LOANFM, PITUSR, TOTCIR, KIDCIRCL, BKVOL,EBOOK,AUDIO_PH,AUDIO_DL,VIDEO_PH, VISITS, C_FSCS)
+df$C_FSCS <- as.factor(df$C_FSCS)
+summary(df)
+```
