@@ -1,0 +1,218 @@
+
+
+```{r}
+library(NbClust)
+library(mclust)
+library(flexclust)
+library(cluster)
+library(fpc)
+library(knitr)
+library(rattle)
+library(dplyr)
+library(stats)
+library(factoextra)
+```
+
+
+```{r}
+# Read in library data for 2021
+lib_data_21 <- read.csv("C:/Users/sevan/OneDrive/School Work/Semester 6/INFO 248/Project/2021/PLS_FY2021 PUD_CSV/21.csv")
+```
+
+
+
+```{r}
+# Combining physical and downloadable copies of audio books into one column called Total_Audio_Books
+lib_data_21$Total_Audio_Books <- lib_data_21$AUDIO_PH + lib_data_21$AUDIO_DL
+# Combining physical and downloadable copies of videos into one column called Total_Videos
+lib_data_21$Total_Videos <- lib_data_21$VIDEO_PH + lib_data_21$VIDEO_DL
+```
+
+```{r}
+# Selecting the specific columns needed for clustering analysis
+variables_21 <- lib_data_21[, c("STABR", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "PITUSR", "REGBOR", "WEBVISIT", "VISITS")]
+```
+
+```{r}
+New_England <- c("ME", "NH", "VT", "MA", "CT", "RI")
+Mideast <- c("NY", "NJ", "PA", "MD", "DE", "DC")
+Great_Lakes <- c("MI", "OH", "IN", "IL", "WI")
+Southeast <- c("WV", "VA", "NC", "SC", "KY", "TN", "GA", "FL", "AL", "MS", "AR", "LA")
+Plains <- c("ND", "SD", "NE", "KS", "MN", "IA", "MO")
+Southwest <- c("AZ", "NM", "OK", "TX")
+Rocky_Mountains <- c("MT", "ID", "WY", "UT", "CO")
+Far_West <- c("WA", "OR", "CA", "NV", "AK", "HI")
+```
+
+```{r}
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% New_England, c(0))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Mideast, c(1))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Great_Lakes, c(2))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Southeast, c(3))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Plains, c(4))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Southwest, c(5))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Rocky_Mountains, c(6))
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Far_West, c(7))
+
+variables_21 <- variables_21[which(variables_21$STABR != "AS"),]
+variables_21$STABR
+
+# take away quotes around numbers to make numeric
+```
+
+
+
+
+```{r}
+Northeast <- c("CT","MA", "ME", "NH", "NJ", "NY", "RI", "VT", "PA", "DE", "MD")
+Midwest <- c("MI", "OH", "IN", "IL", "MO", "IA", "WI", "MN", "ND", "NS", "NE", "KS", "SD")
+Southeast <- c("WV", "VA", "NC", "SC", "KY", "TN", "GA", "FL", "AR", "LA", "AL", "MS", "DC")
+Southwest <- c("AZ", "NM", "OK", "TX")
+West <- c("WA", "OR", "CA", "ID", "NV", "MT", "WY", "UT", "CO", "HI", "AK")
+
+
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Northeast, c("0"))
+
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Midwest, c("1"))
+
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Southeast, c("2"))
+
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% Southwest, c("3"))
+
+variables_21$STABR <- replace(variables_21$STABR, variables_21$STABR %in% West, c("4"))
+
+variables_21 <- variables_21[which(variables_21$STABR != "AS"),]
+
+variables_21$STABR
+
+```
+
+
+
+```{r}
+# Changing all instances of  placeholder values that denote missing data, temporarily closed, suppressed data, or not applicable into NAs
+variables_21[variables_21 < 0] <- NA
+
+# Removing all NAs from the data
+variables_21 <- na.omit(variables_21)
+
+```
+
+
+```{r}
+for (col in names(variables_21)[-c(1)]) {
+  hist(variables_21[[col]])
+}
+```
+
+
+
+```{r}
+cleaned_data_21 <- variables_21
+
+rows_to_remove <- integer(0)
+
+for (col in names(cleaned_data_21)[-c(1)]) {
+  q1 <- quantile(cleaned_data_21[[col]], 0.25,)
+  q3 <- quantile(cleaned_data_21[[col]], 0.75,)
+  
+  iqr <- q3 - q1
+  
+  lower_bound <- q1 - 1.5 * iqr
+  upper_bound <- q3 + 0.75 * iqr
+  
+  outlier_rows <- which(cleaned_data_21[[col]] < lower_bound | cleaned_data_21[[col]] > upper_bound)
+  
+  rows_to_remove <- union(rows_to_remove, outlier_rows)
+}
+
+rows_to_remove <- unique(rows_to_remove)
+
+cleaned_data_21 <- cleaned_data_21[-rows_to_remove, ]
+
+summary(cleaned_data_21)
+
+for (col in names(cleaned_data_21)[-c(1)]) {
+  hist(cleaned_data_21[[col]])
+}
+```
+
+
+```{r}
+def.tbl <- table(cleaned_data_21$STABR)
+kable(def.tbl, col.names = c("Condition", "Frequency"), caption='Cultivar Levels in Dataset')
+```
+
+
+
+```{r}
+variables_21.scaled <- scale(variables_21[-1])
+cleaned_data_21.scaled <- scale(cleaned_data_21[-1])
+```
+
+
+```{r}
+dist.mat <- dist(variables_21.scaled)
+dist.mat_cleaned <- dist(cleaned_data_21.scaled)
+```
+
+Execute the following code that performs a hierarchical clustering using the distance matrix and plots a dendrogram of the result.
+
+```{r}
+clusters <- hclust(dist.mat)
+cluster_cleaned <- hclust(dist.mat_cleaned)
+plot(clusters)
+plot(cluster_cleaned)
+```
+
+```{r}
+wssplot <- function(data, nc=15, seed=1234){
+               wss <- (nrow(data)-1)*sum(apply(data,2,var))
+               for (i in 2:nc){
+                    set.seed(seed)
+                    wss[i] <- sum(kmeans(data, centers=i)$withinss)}
+                plot(1:nc, wss, type="b", xlab="Number of Clusters",
+                     ylab="Within groups sum of squares")
+           }
+```
+
+
+```{r}
+wssplot(variables_21.scaled)
+wssplot(cleaned_data_21.scaled)
+```
+
+
+```{r}
+RNGversion("4.1.2")
+set.seed(1234)
+fit.km7 <- kmeans(variables_21.scaled, 7, nstart=25)
+fit.km7$tot.withinss
+
+
+RNGversion("4.1.2")
+set.seed(1234)
+fit.km4 <- kmeans(cleaned_data_21.scaled, 4, nstart=25)
+fit.km4$tot.withinss
+```
+
+
+```{r}
+plotcluster(variables_21.scaled, fit.km7$cluster)
+plotcluster(cleaned_data_21.scaled, fit.km4$cluster)
+```
+
+
+
+
+```{r}
+model.clus <- Mclust(variables_21.scaled)
+summary(model.clus)
+```
+
+```{r}
+randIndex(table(model.clus$classification, variables_21$STABR))
+mc.tbl <- table(model.clus$classification, variables_21$STABR)
+mc.tbl
+```
+
