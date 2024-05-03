@@ -46,3 +46,5 @@ boxplot(LOANTO~TOTCIR_factor,data=df,
         ylab = "Number of loans given", xlab = "Quantile position of Total Circulation")
 boxplot(LOANTO~REGBOR_factor,data=df,
         ylab = "Number of loans given", xlab = "Quantile position of Registered Users")
+
+
