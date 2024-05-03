@@ -34,7 +34,7 @@ A library's success will be based on a combination of factors such as total inve
  
 #### 1.2 Background
  
- Testing 
+ 
 
 
 
@@ -68,7 +68,7 @@ PITUSR - Numeric: Uses of public Internet computers per year -1–Missing -3–T
 LOANTO - Numeric: Total annual loans provided to other libraries -1–Missing -3–Temporarily closed administrative entity/
 LOANFM - Numeric: Total annual loans received from other libraries -1–Missing -3–Temporarily closed administrative entity/
 
-
+Modifications made to the data includes the removal of a significant amount of outliers, as well as NA and values that represented missing information (-1), temporarily close administrative entity (-3), data suppressed for analytic purposes (-9), and not applicable (-4).
 
 
 
@@ -78,10 +78,106 @@ LOANFM - Numeric: Total annual loans received from other libraries -1–Missing 
 
 This statistical technique included K-Means clustering and model-based clustering. For the K-Means and model-based clusterings, the following variables were used: OBEREG, LIBRARIA, BKVOL, EBOOK, Total_Audio_Books, Total_Videos, REGBOR, and VISITS. The variable Total_Audio_Books was calculated using the AUDIO_PH and AUDIO_DL and the variable Total_Video was calculated using the VIDEOS_PH and AUDIO_DL.
 
+Two datasets were used, one from 2011 and another from 2021 with a subset being taken from each to select the variables being used for the clustering analysis. The 2011 dataset orginally had 9,315 rows while the 2021 dataset had 9,215 rows. After removing a large number of outliers and omitting na values, the 2011 dataset had 6056 rows and the 2021 dataset contained 5,783 rows. Following the removal of outliers, the all of the variable in both dataset were scaled expect for OBEREG which denotes the region. 
+
 
 
 
 #### 3.1.1 Clustering Results
+
+K-Means:
+
+
+
+```{r echo=FALSE}
+
+lib_data_21 <- read.csv("C:/Users/sevan/OneDrive/School Work/Semester 6/INFO 248/Project/2021/PLS_FY2021 PUD_CSV/21.csv")
+
+# Read in library data for 2011
+lib_data_11 <- read.csv("C:/Users/sevan/OneDrive/School Work/Semester 6/INFO 248/Project/2011/pupld11b.csv")
+```
+
+```{r echo=FALSE}
+# Combining physical and downloadable copies of audio books into one column called Total_Audio_Books
+lib_data_21$Total_Audio_Books <- lib_data_21$AUDIO_PH + lib_data_21$AUDIO_DL
+# Combining physical and downloadable copies of videos into one column called Total_Videos
+lib_data_21$Total_Videos <- lib_data_21$VIDEO_PH + lib_data_21$VIDEO_DL
+
+# Combining physical and downloadable copies of audio books into one column called Total_Audio_Books
+lib_data_11$Total_Audio_Books <- lib_data_11$AUDIO_PH + lib_data_11$AUDIO_DL
+# Combining physical and downloadable copies of videos into one column called Total_Videos
+lib_data_11$Total_Videos <- lib_data_11$VIDEO_PH + lib_data_11$VIDEO_DL
+```
+
+```{r echo=FALSE}
+variables_21 <- lib_data_21[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
+variables_11 <- lib_data_11[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
+variables_21 <- variables_21[which(variables_21$OBEREG != 9),]
+variables_11 <- variables_11[which(variables_11$OBEREG != 9),]
+```
+
+
+```{r echo=FALSE}
+variables_21[variables_21 < 0] <- NA
+variables_21 <- na.omit(variables_21)
+
+variables_11[variables_11 < 0] <- NA
+variables_11 <- na.omit(variables_11)
+```
+
+```{r echo=FALSE}
+remover_outliers <- function(data) {
+  rows_to_remove <- integer(0)
+  for (col in names(data)[-c(1)]) {
+    q1 <- quantile(data[[col]], 0.25,)
+    q3 <- quantile(data[[col]], 0.75,)
+    iqr <- q3 - q1
+    
+    lower_bound <- q1 - 1.5 * iqr
+    upper_bound <- q3 + 0.75 * iqr
+  
+    outlier_rows <- which(data[[col]] < lower_bound | data[[col]] > upper_bound)
+  
+    rows_to_remove <- union(rows_to_remove, outlier_rows)
+  }
+  
+  rows_to_remove <- unique(rows_to_remove)
+  cleaned_data <- data[-rows_to_remove, ]
+  
+  return(cleaned_data)
+}
+
+cleaned_data_21 <- remover_outliers(variables_21)
+cleaned_data_11 <- remover_outliers(variables_11)
+
+cleaned_data_21.scaled <- scale(cleaned_data_21[-1])
+cleaned_data_11.scaled <- scale(cleaned_data_11[-1])
+
+```
+
+```{r echo=FALSE}
+plotcluster(cleaned_data_21.scaled, fit.km5$cluster, main = "K-Means Clustering 2021")
+plotcluster(cleaned_data_11.scaled, fit.km4$cluster, main = "K-Means Clustering 2011")
+```
+
+
+
+
+Model-based:
+
+```{r echo=FALSE}
+model.clus_21 <- Mclust(cleaned_data_21.scaled)
+model.clus_11 <- Mclust(cleaned_data_11.scaled)
+```
+
+
+```{r echo=FALSE}
+model.dr <- MclustDR(model.clus_21)
+plot(model.dr, what = "contour")
+
+model.dr_cleaned <- MclustDR(model.clus_11)
+plot(model.dr_cleaned, what = "contour")
+```
 
 
 
