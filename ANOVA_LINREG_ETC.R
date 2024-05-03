@@ -47,4 +47,17 @@ boxplot(LOANTO~TOTCIR_factor,data=df,
 boxplot(LOANTO~REGBOR_factor,data=df,
         ylab = "Number of loans given", xlab = "Quantile position of Registered Users")
 
+visitsAdjusted.vs.everything <- lm(formula = VISITS_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(visitsAdjusted.vs.everything)
+visitsAdjusted.vs.significant <- lm(formula = VISITS_adjusted~EBOOK + PRMATEXP + VIDEO_DL + PHYSCIR + VIDEO_PH, data=df)
+summary(visitsAdjusted.vs.significant)
 
+totcirAdjusted.vs.everything <- lm(formula = TOTCIR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(totcirAdjusted.vs.everything)
+totcirAdjusted.vs.significant <- lm(formula = TOTCIR_adjusted~EBOOK + CAPITAL + PRMATEXP + PITUSR + LOANTO + ELMATCIR + PHYSCIR, data=df)
+summary(totcirAdjusted.vs.significant)
+
+regborAdjusted.vs.everything <- lm(formula = REGBOR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(regborAdjusted.vs.everything)
+regborAdjusted.vs.significant <- lm(formula = REGBOR_adjusted~EBOOK, data=df)
+summary(regborAdjusted.vs.significant)

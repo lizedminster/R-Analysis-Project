@@ -36,3 +36,4 @@ final <- merge(final, df18, by="FSCSKEY", all = T)
 final <- final[,c("FSCSKEY", "VISITS", "VISITS21", "VISITS20", "VISITS19")]
 final$VISITS18 <- final$VISITS
 final$VISITS <- NULL
+
