@@ -113,7 +113,7 @@ lib_data_11$Total_Videos <- lib_data_11$VIDEO_PH + lib_data_11$VIDEO_DL
 variables_21 <- lib_data_21[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
 variables_11 <- lib_data_11[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
 variables_21 <- variables_21[which(variables_21$OBEREG != 9),]
-variables_11 <- variables_11[which(variables_11$OBEREG != 9),]
+variables_11 <- variables_11[which(variables_11$OBEREG != 9),] 
 ```
 
 
@@ -155,12 +155,14 @@ cleaned_data_11.scaled <- scale(cleaned_data_11[-1])
 
 ```
 
-```{r echo=FALSE}
+```{r}
 plotcluster(cleaned_data_21.scaled, fit.km5$cluster, main = "K-Means Clustering 2021")
 plotcluster(cleaned_data_11.scaled, fit.km4$cluster, main = "K-Means Clustering 2011")
 ```
 
+For the results of the 2021 clustering, there appears to be fairly distinct clusters, most with no other points from other clusters overlapping. Additionally, the clusters are relatively compact therefore this suggests minimal disbursement. For the most part, the clusters have close to the same size of data points indicating the clusters are balanced. Overall, it seems that the variables include in the most are relevant for distinguishing between different groups of the data.
 
+For the results of the 2011 clustering, only four clusters were used to sort the data with minimal overlapping into other clusters. However, it appears this model it much less compact than the previous model which suggests changes in business dynamics over 10 years. These cluster's aren't as balanced as the 2021 model, but they aren't too off-balanced. Overall, this model suggests that many of the variable are relevant for distinguishing groups of the data, however over the course of 10 years not all of the variables relevant in the 2021 model may be as relevant in the 2011 model.
 
 
 Model-based:
@@ -171,15 +173,18 @@ model.clus_11 <- Mclust(cleaned_data_11.scaled)
 ```
 
 
-```{r echo=FALSE}
-model.dr <- MclustDR(model.clus_21)
-plot(model.dr, what = "contour")
+```{r}
+model.dr_21 <- MclustDR(model.clus_21)
+plot(model.dr_21, what = "contour")
 
-model.dr_cleaned <- MclustDR(model.clus_11)
-plot(model.dr_cleaned, what = "contour")
+model.dr_11 <- MclustDR(model.clus_11)
+plot(model.dr_11, what = "contour")
 ```
 
 
+For the 2021 model, there are 9 different clusters, although it's difficult to distinguish some of them from others as many appear to overlap. For the most part the clusters appear to be relatively compact meaning there's not too much disbursement. However, the clusters a highly unbalanced with two or three clusters having most of the data and the other clusters having much smaller amounts. Overall, it appears that it's difficult to identify differences among libraries in different regions as the region a library is in does not seem to correlate to the amount of visits they receive or amount of books they have.
+
+For the 2011 model, there are also 9 different clusters that appear to be even more spread out than the 2021 model. Some of these clusters are compact while others are not, although it appears the clusters with larger amounts of data are more spread out. Additionally, these clusters also appear to be unbalanced with two to three clusters having most of the data. Similarly to the 2021 model, it libraries don't appear to be distinguishable based on the region they reside in making it difficult to judge any differences in variables over the years.
 
 
 #### 3.2 
@@ -195,4 +200,10 @@ plot(model.dr_cleaned, what = "contour")
 
 ## 4.0 Conclusions
 
-## 5.0 References 
+
+
+
+## 5.0 References
+
+https://forum.posit.co/t/i-am-trying-to-remove-rows-that-have-a-certain-value-in-a-specific-column-but-am-getting-an-error/166917/2
+https://andrea-grianti.medium.com/kmeans-parameters-in-rstudio-explained-c493ec5a05df
