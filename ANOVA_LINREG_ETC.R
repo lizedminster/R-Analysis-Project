@@ -1,7 +1,7 @@
 library(tidyverse)
 library(gtools)
-data <- read.csv("C:/Users/lized/OneDrive/Documents/GitHub/R-Analysis-Project/pls_fy2021_csv/PLS_FY2021 PUD_CSV/PLS_FY21_AE_pud21i.csv")
-
+setwd("C:/Users/lized/OneDrive/Documents/GitHub/R-Analysis-Project/data")
+data <- read.csv("PLS_FY21_AE_pud21i.csv")
 #This data specifically is the 2021 data
 df <- data %>% select(c(LIBID, LIBNAME, STABR, C_LEGBAS, POPU_LSA, VISITS, BKVOL, EBOOK, CAPITAL, PRMATEXP, ELMATEXP, STAFFEXP, STATNAME, LOCALE_MOD, WEBVISIT, WIFISESS, PITUSR, LOANTO, LOANFM, TOTCIR, ELMATCIR, PHYSCIR, REGBOR, AUDIO_PH, AUDIO_DL, VIDEO_PH, VIDEO_DL))
 df$LOCALE_MOD <- as.factor(df$LOCALE_MOD)
