@@ -90,10 +90,13 @@ This statistical technique included K-Means clustering and model-based clusterin
 
 
 
-#### 3.2 
+#### 3.2 Linear Regression
 
+We used linear regression to identify traits that would significantly impact one of 3 dependent variables: Number of Visits (VISITS), The total circulation of books (TOTCIR), and The number of registered users (REGBOR)
 
+First, we began by fitting a model for each of the adjusted dependent variables: Visits, Circulation, & Users using every selected trait. The adjustment was dividing the number of visits/circulation/users by the number of people in the library's given legal service area. Then, for each of the models, we made a second model that included only the significant variables. This is based on the most recent data: 2021. 
 
+We removed rows where the population, the number of visits, the circulation, or the number of users was missing. This removes 45 rows, bringing our data from 9215 to 9170. 
 
 #### 3.2.1 
 

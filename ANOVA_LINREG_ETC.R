@@ -61,3 +61,14 @@ regborAdjusted.vs.everything <- lm(formula = REGBOR_adjusted~BKVOL + EBOOK + CAP
 summary(regborAdjusted.vs.everything)
 regborAdjusted.vs.significant <- lm(formula = REGBOR_adjusted~EBOOK, data=df)
 summary(regborAdjusted.vs.significant)
+
+
+
+visits.vs.everything <- lm(formula = VISITS~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(visits.vs.everything)
+
+totcir.vs.everything <- lm(formula = TOTCIR~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(totcir.vs.everything)
+
+regbor.vs.everything <- lm(formula = REGBOR~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+summary(regbor.vs.everything)
