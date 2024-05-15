@@ -1,10 +1,10 @@
 library(tidyverse)
 library(gtools)
 setwd("C:/Users/lized/OneDrive/Documents/GitHub/R-Analysis-Project/data")
-data <- read.csv("PLS_FY21_AE_pud21i.csv")
+data <- read.csv("~/GitHub/R-Analysis-Project/data/PLS_FY21_AE_pud21i.csv")
 #This data specifically is the 2021 data
-df <- data %>% select(c(LIBID, LIBNAME, STABR, C_LEGBAS, POPU_LSA, VISITS, BKVOL, EBOOK, CAPITAL, PRMATEXP, ELMATEXP, STAFFEXP, STATNAME, LOCALE_MOD, WEBVISIT, WIFISESS, PITUSR, LOANTO, LOANFM, TOTCIR, ELMATCIR, PHYSCIR, REGBOR, AUDIO_PH, AUDIO_DL, VIDEO_PH, VIDEO_DL))
-df$LOCALE_MOD <- as.factor(df$LOCALE_MOD)
+df <- data %>% select(c(LIBID, LIBNAME, STABR, C_LEGBAS, POPU_LSA, VISITS, BKVOL, EBOOK, CAPITAL, PRMATEXP, ELMATEXP, STAFFEXP, STATNAME, PITUSR, LOANTO, LOANFM, TOTCIR, REGBOR, AUDIO_PH, AUDIO_DL, VIDEO_PH, VIDEO_DL))
+
 df$C_LEGBAS <- as.factor(df$C_LEGBAS)
 df$STATNAME <- as.factor(df$STATNAME)
 summary(df)
@@ -27,9 +27,9 @@ df <- df %>% mutate(VISITS_adjusted = VISITS/POPU_LSA)
 df <- df %>% mutate(TOTCIR_adjusted = TOTCIR/POPU_LSA)
 df <- df %>% mutate(REGBOR_adjusted = REGBOR/POPU_LSA)
 
-df <- df %>% mutate(VISITS_factor = quantcut(VISITS_adjusted, q = 4, na.rm = TRUE, labels = c(1, 2, 3, 4)))
-df <- df %>% mutate(TOTCIR_factor = quantcut(TOTCIR_adjusted, q = 4, na.rm = TRUE, labels = c(1, 2, 3, 4)))
-df <- df %>% mutate(REGBOR_factor = quantcut(REGBOR_adjusted, q = 4, na.rm = TRUE, labels = c(1, 2, 3, 4)))
+df <- df %>% mutate(VISITS_factor = quantcut(VISITS_adjusted, q = 5, na.rm = TRUE, labels = c(1, 2, 3, 4, 5)))
+df <- df %>% mutate(TOTCIR_factor = quantcut(TOTCIR_adjusted, q = 5, na.rm = TRUE, labels = c(1, 2, 3, 4, 5)))
+df <- df %>% mutate(REGBOR_factor = quantcut(REGBOR_adjusted, q = 5, na.rm = TRUE, labels = c(1, 2, 3, 4, 5)))
 
 VISITS.aov <- aov(formula = LOANTO~VISITS_factor, data = df) 
 TOTCIR.aov <- aov(formula = LOANTO~TOTCIR_factor, data = df)
@@ -47,28 +47,17 @@ boxplot(LOANTO~TOTCIR_factor,data=df,
 boxplot(LOANTO~REGBOR_factor,data=df,
         ylab = "Number of loans given", xlab = "Quantile position of Registered Users")
 
-visitsAdjusted.vs.everything <- lm(formula = VISITS_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+visitsAdjusted.vs.everything <- lm(formula = VISITS_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + PITUSR + LOANTO + LOANFM + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
 summary(visitsAdjusted.vs.everything)
-visitsAdjusted.vs.significant <- lm(formula = VISITS_adjusted~EBOOK + PRMATEXP + VIDEO_DL + PHYSCIR + VIDEO_PH, data=df)
+visitsAdjusted.vs.significant <- lm(formula = VISITS_adjusted~BKVOL+EBOOK+LOANTO+AUDIO_DL, data=df)
 summary(visitsAdjusted.vs.significant)
 
-totcirAdjusted.vs.everything <- lm(formula = TOTCIR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+totcirAdjusted.vs.everything <- lm(formula = TOTCIR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + PITUSR + LOANTO + LOANFM + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
 summary(totcirAdjusted.vs.everything)
-totcirAdjusted.vs.significant <- lm(formula = TOTCIR_adjusted~EBOOK + CAPITAL + PRMATEXP + PITUSR + LOANTO + ELMATCIR + PHYSCIR, data=df)
+totcirAdjusted.vs.significant <- lm(formula = TOTCIR_adjusted~BKVOL+EBOOK+PRMATEXP+PITUSR+LOANTO+LOANFM+AUDIO_DL+VIDEO_DL, data=df)
 summary(totcirAdjusted.vs.significant)
 
-regborAdjusted.vs.everything <- lm(formula = REGBOR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
+regborAdjusted.vs.everything <- lm(formula = REGBOR_adjusted~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + PITUSR + LOANTO + LOANFM + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
 summary(regborAdjusted.vs.everything)
-regborAdjusted.vs.significant <- lm(formula = REGBOR_adjusted~EBOOK, data=df)
+regborAdjusted.vs.significant <- lm(formula = REGBOR_adjusted~LOANFM, data=df)
 summary(regborAdjusted.vs.significant)
-
-
-
-visits.vs.everything <- lm(formula = VISITS~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
-summary(visits.vs.everything)
-
-totcir.vs.everything <- lm(formula = TOTCIR~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
-summary(totcir.vs.everything)
-
-regbor.vs.everything <- lm(formula = REGBOR~BKVOL + EBOOK + CAPITAL + PRMATEXP + ELMATEXP + STAFFEXP + WEBVISIT + WIFISESS + PITUSR + LOANTO + LOANFM + ELMATCIR + PHYSCIR + AUDIO_PH + AUDIO_DL + VIDEO_PH + VIDEO_DL, data=df)
-summary(regbor.vs.everything)

@@ -18,7 +18,9 @@ library(dplyr)
 library(stats)
 library(factoextra)
 library(ggplot2)
-
+library(caret)
+library(ROCR)
+library(tidyverse)
 ```
 
 ## 1.0 Introduction
@@ -33,14 +35,16 @@ A library's success will be based on a combination of factors such as total inve
  
  
 #### 1.2 Background
- 
  This data, the Public Library Survey, is run by the Institute of Museum & Library services. The data sets are publicly accessible & provide operational data on almost 9000 libraries across the US & it's territories. Data is collected annually, and the most recent data set is from 2021. 
  
  The data collected encompasses many aspects of library operation. Some examples are geographical data, such as the population of the library's service area, collection data, such as the quantity of EBooks, and administrative data, such as information on worker's salaries. 
  
  This data is collected voluntarily from libraries in a census style. In 2021, 8,903 of the 9,207 libraries responded. NY had the highest quantity of respondents at 756 responding libraries. 6 areas, such as Hawaii & Guam, had only 1 respondent. 
  
- When referring to the population that a library represents, we call it a Legal Service Area. When referring to the type of population (city, county, school, etc.), we call it a Legal Basis Code. 
+ When referring to the population that a library represents, we call it a Legal Service Area. When referring to the type of population (city, county, school, etc.), we call it a Legal Basis Code.
+ 
+
+
 
 
 ## 2.0 Data Description 
@@ -72,7 +76,7 @@ PITUSR - Numeric: Uses of public Internet computers per year -1–Missing -3–T
 LOANTO - Numeric: Total annual loans provided to other libraries -1–Missing -3–Temporarily closed administrative entity/
 LOANFM - Numeric: Total annual loans received from other libraries -1–Missing -3–Temporarily closed administrative entity/
 
-
+Modifications made to the data includes the removal of a significant amount of outliers, as well as NA and values that represented missing information (-1), temporarily close administrative entity (-3), data suppressed for analytic purposes (-9), and not applicable (-4).
 
 
 
@@ -82,12 +86,113 @@ LOANFM - Numeric: Total annual loans received from other libraries -1–Missing 
 
 This statistical technique included K-Means clustering and model-based clustering. For the K-Means and model-based clusterings, the following variables were used: OBEREG, LIBRARIA, BKVOL, EBOOK, Total_Audio_Books, Total_Videos, REGBOR, and VISITS. The variable Total_Audio_Books was calculated using the AUDIO_PH and AUDIO_DL and the variable Total_Video was calculated using the VIDEOS_PH and AUDIO_DL.
 
+Two datasets were used, one from 2011 and another from 2021 with a subset being taken from each to select the variables being used for the clustering analysis. The 2011 dataset orginally had 9,315 rows while the 2021 dataset had 9,215 rows. After removing a large number of outliers and omitting na values, the 2011 dataset had 6056 rows and the 2021 dataset contained 5,783 rows. Following the removal of outliers, the all of the variable in both dataset were scaled expect for OBEREG which denotes the region. 
+
 
 
 
 #### 3.1.1 Clustering Results
 
+K-Means:
 
+
+
+```{r echo=FALSE}
+
+lib_data_21 <- read.csv("C:/Users/sevan/OneDrive/School Work/Semester 6/INFO 248/Project/2021/PLS_FY2021 PUD_CSV/21.csv")
+
+# Read in library data for 2011
+lib_data_11 <- read.csv("C:/Users/sevan/OneDrive/School Work/Semester 6/INFO 248/Project/2011/pupld11b.csv")
+```
+
+```{r echo=FALSE}
+# Combining physical and downloadable copies of audio books into one column called Total_Audio_Books
+lib_data_21$Total_Audio_Books <- lib_data_21$AUDIO_PH + lib_data_21$AUDIO_DL
+# Combining physical and downloadable copies of videos into one column called Total_Videos
+lib_data_21$Total_Videos <- lib_data_21$VIDEO_PH + lib_data_21$VIDEO_DL
+
+# Combining physical and downloadable copies of audio books into one column called Total_Audio_Books
+lib_data_11$Total_Audio_Books <- lib_data_11$AUDIO_PH + lib_data_11$AUDIO_DL
+# Combining physical and downloadable copies of videos into one column called Total_Videos
+lib_data_11$Total_Videos <- lib_data_11$VIDEO_PH + lib_data_11$VIDEO_DL
+```
+
+```{r echo=FALSE}
+variables_21 <- lib_data_21[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
+variables_11 <- lib_data_11[, c("OBEREG", "LIBRARIA", "BKVOL", "EBOOK", "Total_Audio_Books", "Total_Videos", "REGBOR", "VISITS")]
+variables_21 <- variables_21[which(variables_21$OBEREG != 9),]
+variables_11 <- variables_11[which(variables_11$OBEREG != 9),] 
+```
+
+
+```{r echo=FALSE}
+variables_21[variables_21 < 0] <- NA
+variables_21 <- na.omit(variables_21)
+
+variables_11[variables_11 < 0] <- NA
+variables_11 <- na.omit(variables_11)
+```
+
+```{r echo=FALSE}
+remover_outliers <- function(data) {
+  rows_to_remove <- integer(0)
+  for (col in names(data)[-c(1)]) {
+    q1 <- quantile(data[[col]], 0.25,)
+    q3 <- quantile(data[[col]], 0.75,)
+    iqr <- q3 - q1
+    
+    lower_bound <- q1 - 1.5 * iqr
+    upper_bound <- q3 + 0.75 * iqr
+  
+    outlier_rows <- which(data[[col]] < lower_bound | data[[col]] > upper_bound)
+  
+    rows_to_remove <- union(rows_to_remove, outlier_rows)
+  }
+  
+  rows_to_remove <- unique(rows_to_remove)
+  cleaned_data <- data[-rows_to_remove, ]
+  
+  return(cleaned_data)
+}
+
+cleaned_data_21 <- remover_outliers(variables_21)
+cleaned_data_11 <- remover_outliers(variables_11)
+
+cleaned_data_21.scaled <- scale(cleaned_data_21[-1])
+cleaned_data_11.scaled <- scale(cleaned_data_11[-1])
+
+```
+
+```{r}
+plotcluster(cleaned_data_21.scaled, fit.km5$cluster, main = "K-Means Clustering 2021")
+plotcluster(cleaned_data_11.scaled, fit.km4$cluster, main = "K-Means Clustering 2011")
+```
+
+For the results of the 2021 clustering, there appears to be fairly distinct clusters, most with no other points from other clusters overlapping. Additionally, the clusters are relatively compact therefore this suggests minimal disbursement. For the most part, the clusters have close to the same size of data points indicating the clusters are balanced. Overall, it seems that the variables include in the most are relevant for distinguishing between different groups of the data.
+
+For the results of the 2011 clustering, only four clusters were used to sort the data with minimal overlapping into other clusters. However, it appears this model it much less compact than the previous model which suggests changes in business dynamics over 10 years. These cluster's aren't as balanced as the 2021 model, but they aren't too off-balanced. Overall, this model suggests that many of the variable are relevant for distinguishing groups of the data, however over the course of 10 years not all of the variables relevant in the 2021 model may be as relevant in the 2011 model.
+
+
+Model-based:
+
+```{r echo=FALSE}
+model.clus_21 <- Mclust(cleaned_data_21.scaled)
+model.clus_11 <- Mclust(cleaned_data_11.scaled)
+```
+
+
+```{r}
+model.dr_21 <- MclustDR(model.clus_21)
+plot(model.dr_21, what = "contour")
+
+model.dr_11 <- MclustDR(model.clus_11)
+plot(model.dr_11, what = "contour")
+```
+
+
+For the 2021 model, there are 9 different clusters, although it's difficult to distinguish some of them from others as many appear to overlap. For the most part the clusters appear to be relatively compact meaning there's not too much disbursement. However, the clusters a highly unbalanced with two or three clusters having most of the data and the other clusters having much smaller amounts. Overall, it appears that it's difficult to identify differences among libraries in different regions as the region a library is in does not seem to correlate to the amount of visits they receive or amount of books they have.
+
+For the 2011 model, there are also 9 different clusters that appear to be even more spread out than the 2021 model. Some of these clusters are compact while others are not, although it appears the clusters with larger amounts of data are more spread out. Additionally, these clusters also appear to be unbalanced with two to three clusters having most of the data. Similarly to the 2021 model, it libraries don't appear to be distinguishable based on the region they reside in making it difficult to judge any differences in variables over the years.
 
 
 #### 3.2 Linear Regression
@@ -106,4 +211,10 @@ We removed rows where the population, the number of visits, the circulation, or 
 
 ## 4.0 Conclusions
 
-## 5.0 References 
+
+
+
+## 5.0 References
+
+https://forum.posit.co/t/i-am-trying-to-remove-rows-that-have-a-certain-value-in-a-specific-column-but-am-getting-an-error/166917/2
+https://andrea-grianti.medium.com/kmeans-parameters-in-rstudio-explained-c493ec5a05df
