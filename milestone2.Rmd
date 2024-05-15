@@ -18,9 +18,7 @@ library(dplyr)
 library(stats)
 library(factoextra)
 library(ggplot2)
-library(caret)
-library(ROCR)
-library(tidyverse)
+
 ```
 
 ## 1.0 Introduction
@@ -35,13 +33,7 @@ A library's success will be based on a combination of factors such as total inve
  
  
 #### 1.2 Background
- This data, the Public Library Survey, is run by the Institute of Museum & Library services. The data sets are publicly accessible & provide operational data on almost 9000 libraries across the US & it's territories. Data is collected annually, and the most recent data set is from 2021. 
  
- The data collected encompasses many aspects of library operation. Some examples are geographical data, such as the population of the library's service area, collection data, such as the quantity of EBooks, and administrative data, such as information on worker's salaries. 
- 
- This data is collected voluntarily from libraries in a census style. In 2021, 8,903 of the 9,207 libraries responded. NY had the highest quantity of respondents at 756 responding libraries. 6 areas, such as Hawaii & Guam, had only 1 respondent. 
- 
- When referring to the population that a library represents, we call it a Legal Service Area. When referring to the type of population (city, county, school, etc.), we call it a Legal Basis Code.
  
 
 
@@ -164,8 +156,8 @@ cleaned_data_11.scaled <- scale(cleaned_data_11[-1])
 ```
 
 ```{r}
-plotcluster(cleaned_data_21.scaled, fit.km5$cluster, main = "K-Means Clustering 2021")
-plotcluster(cleaned_data_11.scaled, fit.km4$cluster, main = "K-Means Clustering 2011")
+plotcluster(cleaned_data_21.scaled, fit.km5$cluster, main = "Figure 3.1.1: K-Means Clustering 2021")
+plotcluster(cleaned_data_11.scaled, fit.km4$cluster, main = "Figure 3.1.2: K-Means Clustering 2011")
 ```
 
 For the results of the 2021 clustering, there appears to be fairly distinct clusters, most with no other points from other clusters overlapping. Additionally, the clusters are relatively compact therefore this suggests minimal disbursement. For the most part, the clusters have close to the same size of data points indicating the clusters are balanced. Overall, it seems that the variables include in the most are relevant for distinguishing between different groups of the data.
@@ -184,9 +176,11 @@ model.clus_11 <- Mclust(cleaned_data_11.scaled)
 ```{r}
 model.dr_21 <- MclustDR(model.clus_21)
 plot(model.dr_21, what = "contour")
+title("Figure 3.1.3: MClust Clustering 2021")
 
 model.dr_11 <- MclustDR(model.clus_11)
 plot(model.dr_11, what = "contour")
+title("Figure 3.1.4: MClust Clustering 2011")
 ```
 
 
@@ -195,13 +189,10 @@ For the 2021 model, there are 9 different clusters, although it's difficult to d
 For the 2011 model, there are also 9 different clusters that appear to be even more spread out than the 2021 model. Some of these clusters are compact while others are not, although it appears the clusters with larger amounts of data are more spread out. Additionally, these clusters also appear to be unbalanced with two to three clusters having most of the data. Similarly to the 2021 model, it libraries don't appear to be distinguishable based on the region they reside in making it difficult to judge any differences in variables over the years.
 
 
-#### 3.2 Linear Regression
+#### 3.2 
 
-We used linear regression to identify traits that would significantly impact one of 3 dependent variables: Number of Visits (VISITS), The total circulation of books (TOTCIR), and The number of registered users (REGBOR)
 
-First, we began by fitting a model for each of the adjusted dependent variables: Visits, Circulation, & Users using every selected trait. The adjustment was dividing the number of visits/circulation/users by the number of people in the library's given legal service area. Then, for each of the models, we made a second model that included only the significant variables. This is based on the most recent data: 2021. 
 
-We removed rows where the population, the number of visits, the circulation, or the number of users was missing. This removes 45 rows, bringing our data from 9215 to 9170. 
 
 #### 3.2.1 
 
